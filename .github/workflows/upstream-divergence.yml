@@ -29,8 +29,8 @@ jobs:
           {
             echo '## shadcn upstream maintenance'
             echo
-            echo "Fork main: \u0060$fork_sha\u0060"
-            echo "Upstream main: \u0060$upstream_sha\u0060"
+            echo "Fork main SHA: $fork_sha"
+            echo "Upstream main SHA: $upstream_sha"
             echo "Upstream commits to review: **$behind**"
             echo "Local commits not in upstream: **$ahead**"
             echo
