@@ -1,0 +1,41 @@
+name: Check shadcn upstream divergence
+
+on:
+  schedule:
+    - cron: "23 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compare fork with upstream (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/shadcn-ui/ui.git
+          git fetch --no-tags upstream main
+          git fetch --no-tags origin main
+          fork_sha="$(git rev-parse origin/main)"
+          upstream_sha="$(git rev-parse upstream/main)"
+          behind="$(git rev-list --count origin/main..upstream/main)"
+          ahead="$(git rev-list --count upstream/main..origin/main)"
+          {
+            echo '## shadcn upstream maintenance'
+            echo
+            echo "Fork main SHA: $fork_sha"
+            echo "Upstream main SHA: $upstream_sha"
+            echo "Upstream commits to review: **$behind**"
+            echo "Local commits not in upstream: **$ahead**"
+            echo
+            echo 'Review docs/FORK_MAINTENANCE.md. This workflow never merges or pushes.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$behind" -gt 0 ]; then
+            echo "::notice::Fork is $behind commits behind upstream. Open a reviewed sync PR."
+          fi
